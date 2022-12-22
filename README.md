@@ -9,7 +9,6 @@ To install the `openaigo` package, run the following command:
 
 ```
 go get github.com/immadiuttej/openaigo
-
 ```
 
 ### Usage
