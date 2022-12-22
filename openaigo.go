@@ -11,29 +11,31 @@ import (
 
 type Client struct {
 	HTTPClient *http.Client
-	APIKey string
-	Endpoint string
+	APIKey     string
+	Endpoint   string
 }
 
 type CompletionRequest struct {
-	Prompt string
-	Model string
-	MaxTokens int
+	Prompt      string
+	Model       string
+	MaxTokens   int
 	Temperature float64
 }
 
 type CompletionResponse struct {
-	ID string
-	Model string
-	Prompt string
-	Completions []string
+	ID      string
+	Model   string
+	Prompt  string
+	Choices []struct {
+		Text string `json:"text"`
+	} `json:"choices"`
 	Tokens []string
 }
 
-func (c *Client) Complete(ctx context.Context, req *CompletionRequest) (*CompletionResponse, error) {
+func (c *Client) Complete(ctx context.Context, req *CompletionRequest) ([]string, error) {
 	httpReq, err := http.NewRequest("POST", c.Endpoint, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.APIKey))
@@ -66,5 +68,10 @@ func (c *Client) Complete(ctx context.Context, req *CompletionRequest) (*Complet
 		return nil, fmt.Errorf("failed to parse response body: %w", err)
 	}
 
-	return &resp, nil
+	completions := make([]string, len(resp.Choices))
+	for i, choice := range resp.Choices {
+		completions[i] = choice.Text
+	}
+
+	return completions, nil
 }
